@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Media;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -12,6 +14,8 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ST10445734_Prog6221_POE_Part1;
+using Path = System.IO.Path;
 
 namespace ST10445734_PROG6221_POE_Part_3
 {
@@ -37,9 +41,14 @@ namespace ST10445734_PROG6221_POE_Part_3
                 return;
             }
 
+            User user = new User(userName); // Create a new user object with the provided name
+
             // Show chat panel, hide user panel
             UserPanel.Visibility = Visibility.Collapsed;
+            ChatDisplay2.Visibility = Visibility.Collapsed;
             ChatPanel.Visibility = Visibility.Visible;
+
+            PlayWelcomeMessage(userName); // Play the welcome message with the user's name
 
             ChatOutput.Text = $"Hello {userName}, how can I assist you with cybersecurity today?";
         }
@@ -58,6 +67,38 @@ namespace ST10445734_PROG6221_POE_Part_3
 
                 UserInput.Clear();
             }
+        }
+
+        private static void PlayWelcomeMessage(string name) // Method to play welcoming message and display ASCII art header
+        {
+
+            // Get filename
+            string fileName = "ElevenLabs_2025-03-02T18_19_54_Bill_pre_s83_sb75_se0_b_m2.wav";
+            // Get the user profile dynamically
+            string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile); // code from chatgpt to help dynamically use sound
+            // Combine the user profile + filename and path folders dynamically
+            string filePath = Path.Combine(userProfile, "source", "repos", "ST10445734_Prog6221_POE_Part_3", "ST10445734_Prog6221_POE_Part_3", fileName);
+
+            if (File.Exists(filePath))
+            {
+                try
+                {
+                    //Play Greeting audio with the heading
+                    SoundPlayer snd = new SoundPlayer(filePath);
+                    snd.PlaySync();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show("An error occurred while trying to play the sound: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+                    // if an error occurs while playing the sound, display an error message
+                }
+            }
+            else
+            {
+                // else file not found
+                MessageBox.Show("Welcome message file not found. Please ensure the file exists in the correct directory.", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
+            }
+            
         }
     }
 }
