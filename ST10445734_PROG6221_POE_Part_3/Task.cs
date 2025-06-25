@@ -8,5 +8,37 @@ namespace ST10445734_PROG6221_POE_Part_3
 {
     public class Task
     {
+        public string Title { get; set; }
+        public string Description { get; set; }
+        public DateTime? ReminderDate { get; set; }
+        public bool IsCompleted { get; set; }
+
+        public Task(string title, string description, DateTime? reminderDate = null)
+        {
+            Title = title;
+            Description = description;
+            ReminderDate = reminderDate;
+            IsCompleted = false;
+        }
+
+        public void addTask(Task task) 
+        {
+
+        }
+
+        public void viewTasks(List<Task> tasks)
+        {
+            
+        }
+
+        public void deleteTask(List<Task> tasks, Task task) 
+        {
+        }
+
+        public void markTaskAsCompleted(Task task) 
+        {
+        }
+
+        public void ReminderSim() { }
     }
 }
