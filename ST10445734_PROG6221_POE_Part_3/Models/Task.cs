@@ -21,24 +21,7 @@ namespace ST10445734_PROG6221_POE_Part_3
             IsCompleted = false;
         }
 
-        public void addTask(Task task) 
-        {
-
-        }
-
-        public void viewTasks(List<Task> tasks)
-        {
-            
-        }
-
-        public void deleteTask(List<Task> tasks, Task task) 
-        {
-        }
-
-        public void markTaskAsCompleted(Task task) 
-        {
-        }
-
-        public void ReminderSim() { }
+        
+        
     }
 }
