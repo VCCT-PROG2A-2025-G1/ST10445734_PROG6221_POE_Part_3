@@ -14,6 +14,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ST10445734_PROG6221_POE_Part_3.Views;
 using ST10445734_Prog6221_POE_Part1;
 using Path = System.IO.Path;
 
@@ -99,6 +100,18 @@ namespace ST10445734_PROG6221_POE_Part_3
                 MessageBox.Show("Welcome message file not found. Please ensure the file exists in the correct directory.", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             
+        }
+
+        private void OpenTaskWindow_Click(object sender, RoutedEventArgs e)
+        {
+            TaskWindow taskWindow = new TaskWindow();
+            taskWindow.Show(); // Show the task window as a modal dialog
+        }
+
+        private void OpenQuizWindow_Click(object sender, RoutedEventArgs e)
+        {
+            QuizWindow quizWindow = new QuizWindow();
+            quizWindow.Show(); // Show the quiz window as a modal dialog
         }
     }
 }

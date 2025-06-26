@@ -60,6 +60,10 @@
     <Compile Include="Models\QuizResult.cs" />
     <Compile Include="Models\Task.cs" />
     <Compile Include="Models\User.cs" />
+    <Compile Include="Services\QuizService.cs" />
+    <Compile Include="Views\QuizWindow.xaml.cs">
+      <DependentUpon>QuizWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\TaskWindow.xaml.cs">
       <DependentUpon>TaskWindow.xaml</DependentUpon>
     </Compile>
@@ -77,6 +81,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\QuizWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\TaskWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

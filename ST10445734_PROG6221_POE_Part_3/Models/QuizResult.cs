@@ -8,14 +8,14 @@ namespace ST10445734_PROG6221_POE_Part_3.Models
 {
     public class QuizResult
     {
-        public int TotlQuestions { get; set; }
+        public int TotalQuestions { get; set; }
         public int CorrectAnswers { get; set; }
 
         public string Feedback 
         {
             get
             {
-                double score = (double) CorrectAnswers / TotlQuestions * 100;
+                double score = (double) CorrectAnswers / TotalQuestions * 100;
                 if (score >= 80.0 )
                     return "Excellent work! You have a strong understanding of cybersecurity concepts.";
                 else if (score >= 50.0)
