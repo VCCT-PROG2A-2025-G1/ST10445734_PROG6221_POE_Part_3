@@ -1,0 +1,49 @@
+﻿<Window x:Class="ST10445734_PROG6221_POE_Part_3.Views.TaskWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ST10445734_PROG6221_POE_Part_3.Views"
+        mc:Ignorable="d"
+        Title="Task Window" Height="600" Width="800">
+    <Grid Margin="20">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+    
+
+        <TextBlock Text="List Of Tasks" 
+                   FontSize="26"
+                   FontWeight="Bold"
+                   Foreground="#1e3a8a"
+                   Margin="0,0,0,20"/>
+
+        <ListView
+            x:Name="TaskListView"
+            Grid.Row="1"
+            Margin="0,0,0,20"
+            Background="White"
+            BorderBrush="#cbd5e1"
+            BorderThickness="1"
+            SelectionMode="Single">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Title" Width="200" DisplayMemberBinding="{Binding Title}"/>
+                    <GridViewColumn Header="Description" Width="300" DisplayMemberBinding="{Binding Description}"/>
+                    <GridViewColumn Header="Reminder" Width="150" DisplayMemberBinding="{Binding Reminder}"/>
+                    <GridViewColumn Header="IsCompleted" Width="80" DisplayMemberBinding="{Binding IsCompleted}"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" VerticalAlignment="Bottom" >
+            <TextBox x:Name="TitleInput" Width="150" Text="Task Title"/>
+            <TextBox x:Name="DescriptionInput" Width="200" Text="Task Description"/>
+            <DatePicker x:Name="ReminderDateInput" Width="150"/>
+            <Button  Content="Add Task" Width="100" Background="#3b82f6" Foreground="White" Click="AddTask_Click"/>
+            <Button  Content="Delete Task" Width="100" Background="#ef4444" Foreground="White" Click="DeleteTask_Click"/>
+            <Button  Content="Mark Completed" Width="120" Background="#10b981" Foreground="White" Click="MarkCompleted_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>
