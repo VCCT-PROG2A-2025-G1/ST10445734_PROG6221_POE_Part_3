@@ -263,13 +263,13 @@ namespace ST10445734_Prog6221_POE_Part1
                         ChatbotResponse("Please specify a task title and a date in the format 'YYYY-MM-DD'.");
                     }
                 }
-                else if (input.Contains("how are you"))
+                else if (input.Contains("how are you") || input.Contains("how you doing") || input.Contains("feeling alright"))
                 {
                     LogActivity($"{user.Name} asked how the I'm doing");
 
                     ChatbotResponse("I'm doing well, thank you! Always ready to help answer your questions on Cybersecurity.");
                 }
-                else if (input.Contains("what is your purpose") || input.Contains("what's your purpose"))
+                else if (input.Contains("what is your purpose") || input.Contains("what's your purpose") || input.Contains("do you have a purpose"))
                 {
                     LogActivity($"{user.Name} asked about my purpose in life.");
                     ChatbotResponse("I am a cybersecutiy awareness bot. I am here to answer questions and give tips about cybersecurity.");
