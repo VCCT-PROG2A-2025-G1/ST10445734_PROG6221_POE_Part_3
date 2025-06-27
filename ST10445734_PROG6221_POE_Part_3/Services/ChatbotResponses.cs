@@ -26,6 +26,7 @@ namespace ST10445734_Prog6221_POE_Part1
         private static bool isQuizActive = false; // Flag to indicate if a quiz is currently active
         private static int currentQuestionIndex = 0; // Index of the current question in the quiz
         private static int score = 0; // Variable to keep track of the user's score in the quiz
+        private static int quizAttempts = 0; // Counter for the number of quiz attempts
         private static List<QuizQuestion> quizQuestions; // List to hold the quiz questions
 
         private static List<string> activityLog = new List<string>();
@@ -210,22 +211,58 @@ namespace ST10445734_Prog6221_POE_Part1
                         ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
                 }
-                else if (Regex.IsMatch(input, @"\b(password|phishing|safe browsing|privacy)\b"))
+                else if (Regex.IsMatch(input, @"\b(add|create|set|schedule|make)\b.*\b(task|reminder)\b", RegexOptions.IgnoreCase) ||
+                    Regex.IsMatch(input, @"\b(remind me of|can you remind me of|remind me to)\b", RegexOptions.IgnoreCase) ||
+                    Regex.IsMatch(input, @"\b(add task to|set task to|create task for|make this a task)\b", RegexOptions.IgnoreCase))
                 {
-                    string matchedTopic = GetMatchedTopic(input);
 
-                    if (!string.IsNullOrEmpty(matchedTopic))
+                    currentTopic = "task"; // Set current topic to task
+
+                    string taskTitle = ExtractTaskTitle(input); // Extract the task title from the input
+
+                    Task newTask = new Task()
                     {
-                        LogActivity($"{user.Name} wants to know about {currentTopic}");
-                        currentTopic = matchedTopic; // Update the current topic
-                        SelectedRandomResponse(currentTopic);
+                        Title = taskTitle, // Use the input as the task title
+                        Description = "No description provided", // Default description
+                        ReminderDate = ParseNaturalDate(input) ?? DateTime.Now.AddDays(1),
+                        IsCompleted = false
+                    }; // Create a new task object
+
+                    taskService.AddTask(newTask); // Add the new task using the TaskService
+                    ChatbotResponse($"Got it! Adding, {taskTitle}, to task list.");
+                    LogActivity($"Task added: '{newTask.Title}' (Reminder: {newTask.ReminderDate})");
+                }
+                else if (Regex.IsMatch(input, @"\b(remind me in|update the date|set a reminder)\b\s+(a\s+)?task", RegexOptions.IgnoreCase))
+                {
+                    Match match = Regex.Match(input, @"for (.+?) to (\d{4}-\d{2}-\d{2})", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        string taskTitle = match.Groups[1].Value.Trim(); // Extract the task title from the input
+                        DateTime reminderDate = (DateTime)ParseNaturalDate(input);
+                        if (DateTime.TryParse(match.Groups[2].Value, out reminderDate)) // Try to parse the date
+                        {
+                            Task existingTask = taskService.GetTasks().FirstOrDefault(t => t.Title.Equals(taskTitle, StringComparison.OrdinalIgnoreCase));
+                            if (existingTask != null)
+                            {
+                                LogActivity($"Updated info on task called: '{existingTask.Title}'");
+                                existingTask.ReminderDate = reminderDate; // Update the reminder date for the existing task
+                                ChatbotResponse($"Reminder for '{taskTitle}' has been updated to {reminderDate.ToShortDateString()}.");
+                            }
+                            else
+                            {
+                                ChatbotResponse($"No task found with the title '{taskTitle}'. Please check the title and try again.");
+                            }
+                        }
+                        else
+                        {
+                            ChatbotResponse("Invalid date format. Please use YYYY-MM-DD format.");
+                        }
                     }
                     else
                     {
-                        ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
+                        ChatbotResponse("Please specify a task title and a date in the format 'YYYY-MM-DD'.");
                     }
                 }
-
                 else if (input.Contains("how are you"))
                 {
                     LogActivity($"{user.Name} asked how the I'm doing");
@@ -312,63 +349,22 @@ namespace ST10445734_Prog6221_POE_Part1
                     " - Safe Browsing\n" +
                     " - Or type 'Exit'");
                 }
-                else if (Regex.IsMatch(input, @"(add|create|set)\s+(a\s+)?task", RegexOptions.IgnoreCase))
-                {
-                    ChatbotResponse("Got it! You're trying to add a task or reminder.");
-                    currentTopic = "task"; // Set current topic to task
-
-                    string taskTitle = ExtractTaskTitle(input); // Extract the task title from the input
-
-                    Task newTask = new Task()
-                    {
-                        Title = input, // Use the input as the task title
-                        Description = "No description provided", // Default description
-                        ReminderDate = ParseNaturalDate(input) ?? DateTime.Now.AddDays(1),
-                        IsCompleted = false
-                    }; // Create a new task object
-
-                    taskService.AddTask(newTask); // Add the new task using the TaskService
-                    LogActivity($"Task added: '{newTask.Title}' (Reminder: {newTask.ReminderDate})");
-                }
-                else if (Regex.IsMatch(input, @"\b(remind me in|update the date|set a reminder)\b\s+(a\s+)?task", RegexOptions.IgnoreCase))
-                {
-                    Match match = Regex.Match(input, @"for (.+?) to (\d{4}-\d{2}-\d{2})", RegexOptions.IgnoreCase);
-                    if (match.Success)
-                    {
-                        string taskTitle = match.Groups[1].Value.Trim(); // Extract the task title from the input
-                        DateTime reminderDate = (DateTime)ParseNaturalDate(input);
-                        if (DateTime.TryParse(match.Groups[2].Value, out reminderDate)) // Try to parse the date
-                        {
-                            Task existingTask = taskService.GetTasks().FirstOrDefault(t => t.Title.Equals(taskTitle, StringComparison.OrdinalIgnoreCase));
-                            if (existingTask != null)
-                            {
-                                LogActivity($"Updated info on task called: '{existingTask.Title}'");
-                                existingTask.ReminderDate = reminderDate; // Update the reminder date for the existing task
-                                ChatbotResponse($"Reminder for '{taskTitle}' has been updated to {reminderDate.ToShortDateString()}.");
-                            }
-                            else
-                            {
-                                ChatbotResponse($"No task found with the title '{taskTitle}'. Please check the title and try again.");
-                            }
-                        }
-                        else
-                        {
-                            ChatbotResponse("Invalid date format. Please use YYYY-MM-DD format.");
-                        }
-                    }
-                    else
-                    {
-                        ChatbotResponse("Please specify a task title and a date in the format 'YYYY-MM-DD'.");
-                    }
-                }
-                else if (Regex.IsMatch(input, @"\b(show|view|list)\b.*\btasks?\b", RegexOptions.IgnoreCase))
+                else if (Regex.IsMatch(input, @"\b(show the|display|show all|view all|list)\b.*\btasks?\b", RegexOptions.IgnoreCase))
                 {
                     taskService.GetTasks(); // Get the list of tasks from the TaskService
                     LogActivity($"Generated list of all the tasks");
+                    List<Task> tasks = taskService.GetTasks(); // Get the list of tasks
+
+                    foreach (var task in tasks)
+                    {
+                        string status = task.IsCompleted ? "Completed" : "Pending";
+                        string reminder = task.ReminderDate.HasValue ? task.ReminderDate.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture) : "No reminder set";
+                        ChatbotResponse($"Task: {task.Title}, Description: {task.Description}, Status: {status}, Reminder: {reminder}");
+                    }
                 }
-                else if (Regex.IsMatch(input, @"\b(delete|remove)\b.*\btask\b", RegexOptions.IgnoreCase))
+                else if (Regex.IsMatch(input, @"\b(delete|remove|get rid of)\b.*\btask\b", RegexOptions.IgnoreCase))
                 {
-                    Match match = Regex.Match(input, @"task (called|named)? (.+)", RegexOptions.IgnoreCase);
+                    Match match = Regex.Match(input, @"task (called|named)? (.+)", RegexOptions.IgnoreCase); // Match the input to find the task title to delete
                     if (match.Success)
                     {
                         string titleToRemove = match.Groups[2].Value.Trim();
@@ -390,14 +386,47 @@ namespace ST10445734_Prog6221_POE_Part1
                         ChatbotResponse("Please specify the task to delete, e.g., 'Delete task called update antivirus'.");
                     }
                 }
+                else if (Regex.IsMatch(input, @"\b(done|done with|as completed|i completed the|completed|finish|finished)\b.*\btask\b", RegexOptions.IgnoreCase)) 
+                {
+                    Match match = Regex.Match(input, @"task (called|named)? (.+)", RegexOptions.IgnoreCase); // Match the input to find the task title to mark as completed
+                    if (match.Success)
+                    {
+                        string titleToComplete = match.Groups[2].Value.Trim();
+                        var task = taskService.GetTasks().FirstOrDefault(t => t.Title.Equals(titleToComplete, StringComparison.OrdinalIgnoreCase));
+                        if (task != null)
+                        {
+                            taskService.MarkTaskAsCompleted(task);
+                            LogActivity($"Task \"{titleToComplete}\" has been marked as completed.");
+                            ChatbotResponse($"Task \"{titleToComplete}\" has been marked as completed.");
+                        }
+                        else
+                        {
+                            ChatbotResponse($"I couldn't find a task with the title \"{titleToComplete}\".");
+                        }
+                    }
+                    else
+                    {
+                        ChatbotResponse("Please specify the task to mark as completed, e.g., 'Mark task called update antivirus as completed'.");
+                    }
+                }
+                else if (Regex.IsMatch(input, @"\b(clear|delete all|remove all)\b.*\b(tasks?|reminders?)\b", RegexOptions.IgnoreCase))
+                {
+                    taskService.ClearAllTasks(); // Clear all tasks using the TaskService
+                    LogActivity("All tasks have been cleared.");
+                    ChatbotResponse("All tasks have been cleared.");
+                }
                 else if (Regex.IsMatch(input, @"\b(start|play|begin|launch)\b.*\b(quiz|game|cybersecurity quiz|cybersecurity game)\b", RegexOptions.IgnoreCase) ||
                     Regex.IsMatch(input, @"\b(quiz|test|game)\b", RegexOptions.IgnoreCase))
                 {
                     ChatbotResponse($"Great, {user.Name}! Let's start a cybersecurity quiz. I will ask you a series of questions, and you can answer them to test your knowledge.");
 
-                    LogActivity($"{user.Name} started a quiz on cybersecurity awareness.");
+                    
 
                     isQuizActive = true; // Set the quiz active flag to true
+                    quizAttempts++; // Increment the quiz attempts counter
+
+                    LogActivity($"{user.Name} started a quiz on cybersecurity awareness. Attempt number: {quizAttempts}");
+
                     currentQuestionIndex = 0; // Reset the current question index
                     score = 0; // Reset the score
                     quizQuestions = quizService.LoadQuestions1(); // Load the quiz questions from the QuizService
@@ -406,19 +435,34 @@ namespace ST10445734_Prog6221_POE_Part1
 
                 }
                 else if (Regex.IsMatch(input, @"\b(show|view)\b.*\b(activity log|log|history|activity|actions)\b", RegexOptions.IgnoreCase) ||
-                    Regex.IsMatch(input, @"\b(what have you done|recent actions|previous tasks)\b", RegexOptions.IgnoreCase)) 
+                    Regex.IsMatch(input, @"\b(what have you done|recent actions|previous tasks)\b", RegexOptions.IgnoreCase))
                 {
-                    if (logEntries.Count == 0) 
+                    if (logEntries.Count == 0)
                     {
                         ChatbotResponse("No activity log entries found yet. Start interacting with me to create a log of your activities.");
                     }
-                    else 
+                    else
                     {
                         ChatbotResponse("Here are your recent activities:");
-                        foreach (var entry in logEntries) 
+                        foreach (var entry in logEntries)
                         {
                             ChatbotResponse($"{entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} - {entry.Message}");
                         }
+                    }
+                }
+                else if (Regex.IsMatch(input, @"\b(password|phishing|safe browsing|privacy)\b"))
+                {
+                    string matchedTopic = GetMatchedTopic(input);
+
+                    if (!string.IsNullOrEmpty(matchedTopic))
+                    {
+                        LogActivity($"{user.Name} wants to know about {currentTopic}");
+                        currentTopic = matchedTopic; // Update the current topic
+                        SelectedRandomResponse(currentTopic);
+                    }
+                    else
+                    {
+                        ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
                 }
                 else
@@ -707,7 +751,8 @@ namespace ST10445734_Prog6221_POE_Part1
         // method to extract the task title from the input string
         private static string ExtractTaskTitle(string input) 
         {
-            string cleanedInput = Regex.Replace(input, @"\b(add a task|add task|create a task to|create a task|set reminder|set a task|remind me to)\b", "", RegexOptions.IgnoreCase).Trim();
+            // remove common phrases from the input to extract the task title
+            string cleanedInput = Regex.Replace(input, @"^(can you )?(remind me (to|of)|add task to|create task for|set (a )?task to)\s+", "", RegexOptions.IgnoreCase).Trim();
 
             return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cleanedInput); // Convert the cleaned input to title case code from chatgpt
         }

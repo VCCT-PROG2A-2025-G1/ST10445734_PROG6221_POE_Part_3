@@ -298,14 +298,12 @@ namespace ST10445734_PROG6221_POE_Part_3.Services
             }
         }
 
-        //public bool CheckAnswer(string selectedOption)
-        //{
-        //    if (currentQuestionIndex < questions.Count)
-        //    {
-        //        var currentQuestion = questions[currentQuestionIndex];
-        //        return currentQuestion.CorrectAnswer == selectedOption;
-        //    }
-        //    return false;
-        //}
+        public bool CheckAnswer(string selectedOption)
+        {
+            var current = GetCurrentQuestion();
+            if (current == null) return false;
+            int selectedIndex = current.Options.IndexOf(selectedOption);
+            return selectedIndex == current.CorrectAnswerIndex;
+        }
     }
 }
