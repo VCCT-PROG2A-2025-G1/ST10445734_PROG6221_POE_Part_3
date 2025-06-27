@@ -13,14 +13,6 @@ namespace ST10445734_PROG6221_POE_Part_3
         public DateTime? ReminderDate { get; set; }
         public bool IsCompleted { get; set; }
 
-        public Task(string title, string description, DateTime? reminderDate = null)
-        {
-            Title = title;
-            Description = description;
-            ReminderDate = reminderDate;
-            IsCompleted = false;
-        }
-
         
         
     }

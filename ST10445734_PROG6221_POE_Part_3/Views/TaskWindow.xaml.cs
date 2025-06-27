@@ -43,7 +43,13 @@ namespace ST10445734_PROG6221_POE_Part_3.Views
                 MessageBox.Show("Title and Description cannot be empty.", "Error", MessageBoxButton.OK, MessageBoxImage.Error);
                 return;
             }
-            Task newTask = new Task(title, description, reminderDate);
+            Task newTask = new Task() 
+            {
+                Title = title,
+                Description = description,
+                ReminderDate = reminderDate,
+                IsCompleted = false
+            };
 
             taskService.AddTask(newTask);
             tasks.Add(newTask);

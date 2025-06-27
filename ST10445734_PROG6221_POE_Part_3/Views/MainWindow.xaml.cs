@@ -26,11 +26,16 @@ namespace ST10445734_PROG6221_POE_Part_3
     public partial class MainWindow : Window
     {
         private string userName;
+        private User currentUser; // Store the current user object
+
         public MainWindow()
         {
             InitializeComponent();
             ChatDisplay2.Text = "\r\n   _____      _                                        _ _          \r\n  / ____|    | |                                      (_) |         \r\n | |    _   _| |__   ___ _ __ ___  ___  ___ _   _ _ __ _| |_ _   _  \r\n | |   | | | | '_ \\ / _ \\ '__/ __|/ _ \\/ __| | | | '__| | __| | | | \r\n | |___| |_| | |_) |  __/ |  \\__ \\  __/ (__| |_| | |  | | |_| |_| | \r\n  \\_____\\__, |_.__/ \\___|_|  |___/\\___|\\___|\\__,_|_|  |_|\\__|\\__, | \r\n     /\\  __/ |                                                __/ | \r\n    /  \\|___/   ____ _ _ __ ___ _ __   ___  ___ ___          |___/  \r\n   / /\\ \\ \\ /\\ / / _` | '__/ _ \\ '_ \\ / _ \\/ __/ __|                \r\n  / ____ \\ V  V / (_| | | |  __/ | | |  __/\\__ \\__ \\                \r\n /_/__  \\_\\_/\\_/ \\__,_|_|  \\___|_| |_|\\___||___/___/                \r\n |  _ \\      | |                                                    \r\n | |_) | ___ | |_                                                   \r\n |  _ < / _ \\| __|                                                  \r\n | |_) | (_) | |_                                                   \r\n |____/ \\___/ \\__|                                                  \r\n                                                                    \r\n                                                                    \r\n";
+            ChatbotResponses.SetPrintMethod(AppendToChat);
+            
         }
+
 
         private void StartChatbot_Click(object sender, RoutedEventArgs e)
         {
@@ -42,7 +47,7 @@ namespace ST10445734_PROG6221_POE_Part_3
                 return;
             }
 
-            User user = new User(userName); // Create a new user object with the provided name
+            currentUser = new User(userName); // Create a new user object with the provided name
 
             // Show chat panel, hide user panel
             UserPanel.Visibility = Visibility.Collapsed;
@@ -60,11 +65,8 @@ namespace ST10445734_PROG6221_POE_Part_3
 
             if (!string.IsNullOrEmpty(userMessage))
             {
-                ChatOutput.Text += $"\nYou: {userMessage}";
-                // Here you would call your chatbot logic class
-                // For example:
-                // string response = chatbot.GetResponse(userMessage);
-                // ChatOutput.Text += $"\nBot: {response}";
+                ChatOutput.Text += $"\nYou: {userMessage} \n";
+                ChatbotResponses.RespondToInput(userMessage, currentUser); // Call the chatbot response method with the user's message and name
 
                 UserInput.Clear();
             }
@@ -100,6 +102,11 @@ namespace ST10445734_PROG6221_POE_Part_3
                 MessageBox.Show("Welcome message file not found. Please ensure the file exists in the correct directory.", "File Not Found", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
             
+        }
+
+        private void AppendToChat(string message) 
+        {
+            ChatOutput.AppendText(message + Environment.NewLine);
         }
 
         private void OpenTaskWindow_Click(object sender, RoutedEventArgs e)

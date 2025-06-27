@@ -1,16 +1,29 @@
-﻿using System;
+﻿using ST10445734_PROG6221_POE_Part_3;
+using ST10445734_PROG6221_POE_Part_3.Services;
+using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Task = ST10445734_PROG6221_POE_Part_3.Task;
 
 namespace ST10445734_Prog6221_POE_Part1
 {
 
     public static class ChatbotResponses
     {
+
+        public static Action<string> ChatOutput = null; // Action to output chat messages
+
+        private static TaskService taskService = new TaskService(); // Instance of TaskService to manage tasks
+        private static QuizService quizService = new QuizService(); // Instance of QuizService to manage quizzes
+
+        private static bool isQuizActive = false; // Flag to indicate if a quiz is currently active
+
         private static Random rand = new Random();
         private static List<string> passwordTips = new List<string>
         {
@@ -109,31 +122,15 @@ namespace ST10445734_Prog6221_POE_Part1
                 input = input.ToLower(); // Convert input to lowercase for easier matching
 
                 // Check if the input contains specific keywords to determine the user's interest or concern
-                if (input.Contains("interested in") && (input.Contains("password") || input.Contains("phishing") || input.Contains("safe browsing") || input.Contains("privacy")))
+                if (Regex.IsMatch(input, @"\b(interested in|want to know more about|keen on|tell me more)\b.*\b(password|phishing|safe browsing|privacy)\b"))
                 {
-                    if (input.Contains("password"))
-                    {
-                        user.FavoriteTopic = "password";
-                        currentTopic = "password";
-                    }
-                    else if (input.Contains("phishing"))
-                    {
-                        user.FavoriteTopic = "phishing";
-                        currentTopic = "phishing";
-                    }
-                    else if (input.Contains("safe browsing"))
-                    {
-                        user.FavoriteTopic = "safe browsing";
-                        currentTopic = "safe browsing";
-                    }
-                    else if (input.Contains("privacy"))
-                    {
-                        user.FavoriteTopic = "privacy";
-                        currentTopic = "privacy";
-                    }
+                    string matchedTopic = GetMatchedTopic(input);
 
-                    if (!string.IsNullOrEmpty(currentTopic))
+                    if (!string.IsNullOrEmpty(matchedTopic))
                     {
+                        user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
+                        currentTopic = matchedTopic; // Update the current topic
+
                         ChatbotResponse($"Great, {user.Name}! I see you're interested in {user.FavoriteTopic}. Would you like to know more about it?");
                         GiveCurrentTipTopic(user.FavoriteTopic);
                     }
@@ -142,101 +139,74 @@ namespace ST10445734_Prog6221_POE_Part1
                         ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
                 }
-                else if (input.Contains("worried") || input.Contains("scared") || input.Contains("nervous") || input.Contains("concerned"))
+                else if (Regex.IsMatch(input, @"\b(worried|afraid|concerned|nervous|scared)\b.*\b(password|phishing|safe browsing|privacy)\b"))
                 {
-                    if (input.Contains("password"))
+                    string matchedTopic = GetMatchedTopic(input);
+
+                    if (!string.IsNullOrEmpty(matchedTopic))
                     {
-                        user.FavoriteTopic = "password";
-                        currentTopic = "password";
+                        user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
+                        currentTopic = matchedTopic; // Update the current topic
+
+                        ChatbotResponse($"It's completely understandable to feel that way, {user.Name}. Cyber threats can be scary. Let's take a look at a helpful tip about {currentTopic}.");
+                        GiveCurrentTipTopic(user.FavoriteTopic);
                     }
-                    else if (input.Contains("phishing"))
+                    else
                     {
-                        user.FavoriteTopic = "phishing";
-                        currentTopic = "phishing";
+                        ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
-                    else if (input.Contains("safe browsing") || input.Contains("browsing") || input.Contains("browsing safety"))
-                    {
-                        user.FavoriteTopic = "safe browsing";
-                        currentTopic = "safe browsing";
-                    }
-                    else if (input.Contains("privacy"))
-                    {
-                        user.FavoriteTopic = "privacy";
-                        currentTopic = "privacy";
-                    }
-                    ChatbotResponse($"It's completely understandable to feel that way, {user.Name}. Cyber threats can be scary. Let's take a look at a helpful tip about {currentTopic}.");
+
                     GiveCurrentTipTopic(currentTopic);
                 }
-                else if (input.Contains("curious") || input.Contains("interested") || input.Contains("want to learn"))
+                else if (Regex.IsMatch(input, @"\b(curious|want to learn)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("curious") || input.Contains("interested") || input.Contains("want to learn")
                 {
-                    if (input.Contains("password"))
+                    string matchedTopic = GetMatchedTopic(input);
+
+                    if (!string.IsNullOrEmpty(matchedTopic))
                     {
-                        user.FavoriteTopic = "password";
-                        currentTopic = "password";
+                        user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
+                        currentTopic = matchedTopic; // Update the current topic
+
+                        ChatbotResponse($"That's great, {user.Name}! Learning about {currentTopic} is a smart move. Here's something useful:");
+                        GiveCurrentTipTopic(currentTopic);
                     }
-                    else if (input.Contains("phishing"))
+                    else
                     {
-                        user.FavoriteTopic = "phishing";
-                        currentTopic = "phishing";
+                        ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
-                    else if (input.Contains("safe browsing") || input.Contains("browsing") || input.Contains("browsing safety"))
-                    {
-                        user.FavoriteTopic = "safe browsing";
-                        currentTopic = "safe browsing";
-                    }
-                    else if (input.Contains("privacy"))
-                    {
-                        user.FavoriteTopic = "privacy";
-                        currentTopic = "privacy";
-                    }
-                    ChatbotResponse($"That's great, {user.Name}! Learning about {currentTopic} is a smart move. Here's something useful:");
-                    GiveCurrentTipTopic(currentTopic);
                 }
-                else if (input.Contains("frustrated") || input.Contains("annoyed") || input.Contains("confused"))
+                else if (Regex.IsMatch(input, @"\b(frustrated|annoyed|confused)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("frustrated") || input.Contains("annoyed") || input.Contains("confused")
                 {
-                    if (input.Contains("password"))
+                    string matchedTopic = GetMatchedTopic(input);
+
+                    if (!string.IsNullOrEmpty(matchedTopic))
                     {
-                        user.FavoriteTopic = "password";
-                        currentTopic = "password";
+                        user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
+                        currentTopic = matchedTopic; // Update the current topic
+
+                        ChatbotResponse($"I'm sorry you're feeling that way, {user.Name}. Let me try to help make {currentTopic} clearer with this tip:");
+                        GiveCurrentTipTopic(currentTopic);
                     }
-                    else if (input.Contains("phishing"))
+                    else
                     {
-                        user.FavoriteTopic = "phishing";
-                        currentTopic = "phishing";
+                        ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
-                    else if (input.Contains("safe browsing") || input.Contains("browsing") || input.Contains("browsing safety"))
+                }
+                else if (Regex.IsMatch(input, @"\b(password|phishing|safe browsing|privacy)\b"))
+                {
+                    string matchedTopic = GetMatchedTopic(input);
+
+                    if (!string.IsNullOrEmpty(matchedTopic))
                     {
-                        user.FavoriteTopic = "safe browsing";
-                        currentTopic = "safe browsing";
+                        currentTopic = matchedTopic; // Update the current topic
+                        SelectedRandomResponse(currentTopic);
                     }
-                    else if (input.Contains("privacy"))
+                    else
                     {
-                        user.FavoriteTopic = "privacy";
-                        currentTopic = "privacy";
+                        ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
-                    ChatbotResponse($"I'm sorry you're feeling that way, {user.Name}. Let me try to help make {currentTopic} clearer with this tip:");
-                    GiveCurrentTipTopic(currentTopic);
                 }
-                else if (input.Contains("password"))
-                {
-                    currentTopic = "password";
-                    SelectedRandomResponse(passwordTips, currentTopic);
-                }
-                else if (input.Contains("phishing") || input.Contains("scam"))
-                {
-                    currentTopic = "phishing";
-                    SelectedRandomResponse(phishingTips, currentTopic);
-                }
-                else if (input.Contains("safe browsing") || input.Contains("browsing") || input.Contains("browsing safety"))
-                {
-                    currentTopic = "safe browsing";
-                    SelectedRandomResponse(browsingTips, currentTopic);
-                }
-                else if (input.Contains("privacy"))
-                {
-                    currentTopic = "privacy";
-                    SelectedRandomResponse(privacyTips, currentTopic);
-                }
+
                 else if (input.Contains("how are you"))
                 {
                     ChatbotResponse("I'm doing well, thank you! Always ready to help answer your questions on Cybersecurity.");
@@ -249,34 +219,24 @@ namespace ST10445734_Prog6221_POE_Part1
                 {
                     ChatbotResponse("You can ask about password safety, phishing scams, browsing safety or anything related to cybersecurity.");
                 }
-                else if ( input.Contains("again") || input.Contains("repeat") || input.Contains("come again"))
+                else if (Regex.IsMatch(input, @"\b(again|repeat|come again|please repeat|can you explain again|huh)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("again") || input.Contains("repeat") || input.Contains("come again")
                 {
+                    string matchedTopic = GetMatchedTopic(input);
+
                     if (!string.IsNullOrEmpty(currentTopic))
                     {
-                        switch (currentTopic)
-                        {
-                            case "password":
-                                RepeatResponse(passwordTips, currentTopic);
-                                break;
-                            case "phishing":
-                                RepeatResponse(phishingTips, currentTopic);
-                                break;
-                            case "safe browsing":
-                                RepeatResponse(browsingTips, currentTopic);
-                                break;
-                            case "privacy":
-                                RepeatResponse(privacyTips, currentTopic);
-                                break;
-                        }
+                        currentTopic = matchedTopic; // Update the current topic
+                        RepeatResponse(currentTopic); // Repeat the last response for the current topic
                     }
                     else
                     {
                         ChatbotResponse("Please specify a topic first, like password safety, phishing, safe browsing, or privacy.");
                     }
                 }
-                else if (input.Contains("more") || input.Contains("another") || input.Contains("more info")
-                    || input.Contains("explain") || input.Contains("details"))
+                else if (Regex.IsMatch(input, @"\b(more info|tell me more|expand on this|tell me more about|can you explain again|explain more|give me more information)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("more info") || input.Contains("tell me more") || input.Contains("expand on this") || input.Contains("explain more")  || input.Contains("tell me more about") || input.Contains("expand on this") || input.Contains("explain more"))
                 {
+                    string matchedTopic = GetMatchedTopic(input);
+
                     if (!string.IsNullOrEmpty(currentTopic))
                     {
                         ChatbotResponse($"Sure {user.Name}, here's more info on {currentTopic}:");
@@ -288,10 +248,15 @@ namespace ST10445734_Prog6221_POE_Part1
                     }
                 }
 
-                else if (input.Contains("remind me") || input.Contains("favourite") || input.Contains("favorite"))
+                else if (Regex.IsMatch(input, @"\b(remind me|favourite|expand on this|favorite|love this|enjoy)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("remind me") || input.Contains("favourite") || input.Contains("favorite")
                 {
-                    if (!string.IsNullOrEmpty(user.FavoriteTopic))
+                    string matchedTopic = GetMatchedTopic(input);
+
+                    if (!string.IsNullOrEmpty(matchedTopic))
                     {
+                        user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
+                        currentTopic = matchedTopic; // Update the current topic
+
                         ChatbotResponse($"As someone interested in {user.FavoriteTopic}");
                         GiveCurrentTipTopic(user.FavoriteTopic);
                     }
@@ -319,6 +284,91 @@ namespace ST10445734_Prog6221_POE_Part1
                     " - Safe Browsing\n" +
                     " - Or type 'Exit'");
                 }
+                else if (Regex.IsMatch(input, @"(add|create|set)\s+(a\s+)?task", RegexOptions.IgnoreCase))
+                {
+                    ChatbotResponse("Got it! You're trying to add a task or reminder.");
+                    currentTopic = "task"; // Set current topic to task
+
+                    string taskTitle = ExtractTaskTitle(input); // Extract the task title from the input
+
+                    Task newTask = new Task()
+                    {
+                        Title = input, // Use the input as the task title
+                        Description = "No description provided", // Default description
+                        ReminderDate = ParseNaturalDate(input) ?? DateTime.Now.AddDays(1),
+                        IsCompleted = false
+                    }; // Create a new task object
+
+                    taskService.AddTask(newTask); // Add the new task using the TaskService
+                }
+                else if (Regex.IsMatch(input, @"\b(remind me in|update the date|set a reminder)\b\s+(a\s+)?task", RegexOptions.IgnoreCase))
+                {
+                    Match match = Regex.Match(input, @"for (.+?) to (\d{4}-\d{2}-\d{2})", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        string taskTitle = match.Groups[1].Value.Trim(); // Extract the task title from the input
+                        DateTime reminderDate = (DateTime)ParseNaturalDate(input);
+                        if (DateTime.TryParse(match.Groups[2].Value, out reminderDate)) // Try to parse the date
+                        {
+                            Task existingTask = taskService.GetTasks().FirstOrDefault(t => t.Title.Equals(taskTitle, StringComparison.OrdinalIgnoreCase));
+                            if (existingTask != null)
+                            {
+                                existingTask.ReminderDate = reminderDate; // Update the reminder date for the existing task
+                                ChatbotResponse($"Reminder for '{taskTitle}' has been updated to {reminderDate.ToShortDateString()}.");
+                            }
+                            else
+                            {
+                                ChatbotResponse($"No task found with the title '{taskTitle}'. Please check the title and try again.");
+                            }
+                        }
+                        else
+                        {
+                            ChatbotResponse("Invalid date format. Please use YYYY-MM-DD format.");
+                        }
+                    }
+                    else
+                    {
+                        ChatbotResponse("Please specify a task title and a date in the format 'YYYY-MM-DD'.");
+                    }
+                }
+                else if (Regex.IsMatch(input, @"\b(show|view|list)\b.*\btasks?\b", RegexOptions.IgnoreCase))
+                {
+                    taskService.GetTasks(); // Get the list of tasks from the TaskService
+                }
+                else if (Regex.IsMatch(input, @"\b(delete|remove)\b.*\btask\b", RegexOptions.IgnoreCase))
+                {
+                    Match match = Regex.Match(input, @"task (called|named)? (.+)", RegexOptions.IgnoreCase);
+                    if (match.Success)
+                    {
+                        string titleToRemove = match.Groups[2].Value.Trim();
+
+                        var task = taskService.GetTasks().FirstOrDefault(t => t.Title.Equals(titleToRemove, StringComparison.OrdinalIgnoreCase));
+                        if (task != null)
+                        {
+                            taskService.DeleteTask(task);
+                            ChatbotResponse($"Task \"{titleToRemove}\" has been removed.");
+                        }
+                        else
+                        {
+                            ChatbotResponse($"I couldn't find a task with the title \"{titleToRemove}\".");
+                        }
+                    }
+                    else
+                    {
+                        ChatbotResponse("Please specify the task to delete, e.g., 'Delete task called update antivirus'.");
+                    }
+                }
+                else if (Regex.IsMatch(input, @"\b(start|play|begin|launch)\b.*\b(quiz|game|cybersecurity quiz|cybersecurity game)\b", RegexOptions.IgnoreCase) ||
+                    Regex.IsMatch(input, @"\b(quiz|test|game)\b", RegexOptions.IgnoreCase)) 
+                {
+                    ChatbotResponse($"Great, {user.Name}! Let's start a cybersecurity quiz. I will ask you a series of questions, and you can answer them to test your knowledge.");
+                    isQuizActive = true; // Set the quiz active flag to true
+
+                    while (isQuizActive) 
+                    {
+                        PlayQuiz();
+                    }
+                }
                 else
                 {
                     ChatbotResponse("Not quite sure what you are asking. Please ask another quesiton");
@@ -329,6 +379,12 @@ namespace ST10445734_Prog6221_POE_Part1
                 Console.WriteLine($"An error occurred: {ex.Message}");
                 return;
             }
+        }
+
+        // method to play the quiz
+        private static void PlayQuiz()
+        {
+            
         }
 
         // method to show expanded tip
@@ -358,18 +414,45 @@ namespace ST10445734_Prog6221_POE_Part1
             // This method formats the chatbot's response with a typing effect and color coding
             try
             {
-                Console.ForegroundColor = ConsoleColor.Blue;
-                TypeEffect($">> {message}");
-                Console.ResetColor();
-                Console.WriteLine();
+                if (ChatOutput != null)
+                {
+                   ChatOutput($">> {message}"); // Set default print method if not already set
+                }
+
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Blue;
+                    TypeEffect($">> {message}");
+                    Console.ResetColor();
+                    Console.WriteLine();
+                }
             } 
             catch (Exception ex)
             {
-                Console.ForegroundColor = ConsoleColor.Red;
-                TypeEffect($">> {ex.Message}");
-                Console.ResetColor();
-                Console.WriteLine();
+                if (ChatOutput !=null)  
+                {
+                    ChatOutput($">> ERROR: {ex.Message}"); // If ChatOutput is set, use it to print the error message
+                }
+                else if (Console.IsOutputRedirected) 
+                { 
+                    return; // If output is redirected, do not print to console
+                }
+                else
+                {
+                    Console.ForegroundColor = ConsoleColor.Red;
+                    TypeEffect($">> {ex.Message}");
+                    Console.ResetColor();
+                    Console.WriteLine();
+                }
             }
+                
+                
+        }
+
+        public static void SetPrintMethod(Action<string> printMethod)
+        {
+            // This method sets the print method for chatbot responses
+            ChatOutput = printMethod;
         }
 
         // adds typing animation effect
@@ -398,8 +481,10 @@ namespace ST10445734_Prog6221_POE_Part1
         }
 
         // method to randomise the response from a list of responses
-        private static void SelectedRandomResponse(List<string> response, string topic)
+        private static void SelectedRandomResponse( string topic)
         {
+            List<string> response = GetResponseListByTopic(topic); // Get the list of responses for the current topic
+
             // This method selects a random response from the provided list of responses for the given topic
             if (response == null || response.Count == 0) 
             {
@@ -429,8 +514,10 @@ namespace ST10445734_Prog6221_POE_Part1
         }
 
         // method to repeat the last response for a specific topic
-        private static void RepeatResponse(List<string> response, string topic) 
+        private static void RepeatResponse( string topic) 
         {
+            List<string> response = GetResponseListByTopic(topic); // Get the list of responses for the current topic
+
             // This method repeats the last response for a specific topic
             if (response == null || response.Count == 0)
             {
@@ -458,6 +545,26 @@ namespace ST10445734_Prog6221_POE_Part1
             ChatbotResponse(response[lastIndex]); // Output the selected response to the console
         }
 
+        private static List<string> GetResponseListByTopic(string topic) 
+        {
+            // This method returns the list of responses based on the current topic
+            switch (topic)
+            {
+                case "password":
+                    return passwordTips;
+                case "phishing":
+                    return phishingTips;
+                case "safe browsing":
+                    return browsingTips;
+                case "privacy":
+                    return privacyTips;
+                default:
+                    return new List<string>(); // Return an empty list if no topic matches
+            }
+
+        }
+            
+
         // method to give the current topic response
         private static void GiveCurrentTipTopic(string topic)
         {
@@ -465,18 +572,65 @@ namespace ST10445734_Prog6221_POE_Part1
             switch (topic)
             {
                 case "password":
-                    SelectedRandomResponse(passwordTips, currentTopic);
+                    SelectedRandomResponse(currentTopic);
                     break;
                 case "phishing":
-                    SelectedRandomResponse(phishingTips, currentTopic);
+                    SelectedRandomResponse(currentTopic);
                     break;
                 case "safe browsing":
-                    SelectedRandomResponse(browsingTips, currentTopic);
+                    SelectedRandomResponse(currentTopic);
                     break;
                 case "privacy":
-                    SelectedRandomResponse(privacyTips, currentTopic);
+                    SelectedRandomResponse(currentTopic);
                     break;
             }
+        }
+
+        private static string GetMatchedTopic(string input) 
+        {
+            if (Regex.IsMatch(input,@"\bpassword(s)?\b")) return "password";
+            if (Regex.IsMatch(input,@"\bphishing\b")) return "phishing";
+            if (Regex.IsMatch(input, @"\bsafe browsing|browsing safety\b")) return "safe browsing";
+            if (Regex.IsMatch(input, @"\bprivacy\b")) return "privacy";
+            return null; // Return null if no topic is matched
+        }
+
+        private static string ExtractTaskTitle(string input) 
+        {
+            string cleanedInput = Regex.Replace(input, @"\b(add a task|add task|create a task to|create a task|set reminder|set a task|remind me to)\b", "", RegexOptions.IgnoreCase).Trim();
+
+            return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cleanedInput); // Convert the cleaned input to title case code from chatgpt
+        }
+
+        private static DateTime? ParseNaturalDate(string input) 
+        {
+            if (input.Contains("tomorrow")) 
+            {
+                return DateTime.Now.AddDays(1); // Return tomorrow's date
+            }
+            if (input.Contains("next week")) 
+            {
+                return DateTime.Now.AddDays(7); // Return next week's date
+            }
+
+            Match inDaysMatch = Regex.Match(input, @"in (\d+) (day|days|week|weeks)", RegexOptions.IgnoreCase);
+
+            if (inDaysMatch.Success) 
+            {
+                int amount = int.Parse(inDaysMatch.Groups[1].Value);
+                string unit = inDaysMatch.Groups[2].Value;
+
+                if (unit.StartsWith("week"))
+                {
+                    return DateTime.Now.AddDays(amount * 7);
+                }
+                else
+                {
+                    return DateTime.Now.AddDays(amount); // Return the date in the specified number of days
+                }
+            }
+
+            return null;
         }
     }
 }
