@@ -317,9 +317,9 @@ namespace ST10445734_Prog6221_POE_Part1
                         ChatbotResponse("Please specify a topic first, like password safety, phishing, safe browsing, or privacy.");
                     }
                 }
-                else if (Regex.IsMatch(input, @"\b(more info|tell me more|expand on this|tell me more about|can you explain again|explain more|give me more information)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("more info") || input.Contains("tell me more") || input.Contains("expand on this") || input.Contains("explain more")  || input.Contains("tell me more about") || input.Contains("expand on this") || input.Contains("explain more"))
+                else if (Regex.IsMatch(input, @"\b(more info|tell me more|expand on this|tell me more about|can you explain again|explain more|give me more information)\b")) 
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(currentTopic))
                     {
@@ -333,9 +333,9 @@ namespace ST10445734_Prog6221_POE_Part1
                     }
                 }
 
-                else if (Regex.IsMatch(input, @"\b(remind me|favourite|expand on this|favorite|love this|enjoy)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("remind me") || input.Contains("favourite") || input.Contains("favorite")
+                else if (Regex.IsMatch(input, @"\b(remind me|favourite|expand on this|favorite|love this|enjoy)\b"))
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(matchedTopic))
                     {
@@ -475,7 +475,7 @@ namespace ST10445734_Prog6221_POE_Part1
                 }
                 else if (Regex.IsMatch(input, @"\b(password|phishing|safe browsing|privacy)\b"))
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(matchedTopic))
                     {
