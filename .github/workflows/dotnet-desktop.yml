@@ -1,0 +1,29 @@
+name: Prog6221 POE
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+
+    runs-on: windows-latest
+
+    steps: 
+      - name: Checkout
+        uses: actions/checkout@v4
+        
+      - name: MSbuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: List files
+        run: dir 
+        
+      - name: NuGet Packages
+        run: nuget restore ST10445734_Prog6221_POE_Part_3.sln
+        
+      - name: Solution
+        run: msbuild ST10445734_Prog6221_POE_Part_3.sln /p:Configuration=Release
+
