@@ -406,10 +406,10 @@ namespace ST10445734_Prog6221_POE_Part1
                     }
                     else
                     {
-                        ChatbotResponse("Please specify the task to delete, e.g., 'Delete task called update antivirus'.");
+                        ChatbotResponse("Please use 'called' or 'named' to specify the task to delete, e.g., 'Delete task called update antivirus'.");
                     }
                 }
-                else if (Regex.IsMatch(input, @"\b(done|done with|as completed|i completed the|completed|finish|finished)\b.*\btask\b", RegexOptions.IgnoreCase)) 
+                else if (Regex.IsMatch(input, @"\b(done|done with|as completed|i completed the|completed|finish|finished|mark)\b.*\btask\b", RegexOptions.IgnoreCase)) 
                 {
                     Match match = Regex.Match(input, @"task (called|named)? (.+)", RegexOptions.IgnoreCase); // Match the input to find the task title to mark as completed
                     if (match.Success)
@@ -429,7 +429,7 @@ namespace ST10445734_Prog6221_POE_Part1
                     }
                     else
                     {
-                        ChatbotResponse("Please specify the task to mark as completed, e.g., 'Mark task called update antivirus as completed'.");
+                        ChatbotResponse("Please use 'called' or 'named' specify the task to mark as completed, e.g., 'Mark task ''called'' update antivirus as completed'.");
                     }
                 }
                 else if (Regex.IsMatch(input, @"\b(clear|delete all|remove all)\b.*\b(tasks?|reminders?)\b", RegexOptions.IgnoreCase))
