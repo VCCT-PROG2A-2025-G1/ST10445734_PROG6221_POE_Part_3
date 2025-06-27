@@ -1,4 +1,5 @@
 ﻿using ST10445734_PROG6221_POE_Part_3;
+using ST10445734_PROG6221_POE_Part_3.Models;
 using ST10445734_PROG6221_POE_Part_3.Services;
 using System;
 using System.Collections.Generic;
@@ -23,6 +24,13 @@ namespace ST10445734_Prog6221_POE_Part1
         private static QuizService quizService = new QuizService(); // Instance of QuizService to manage quizzes
 
         private static bool isQuizActive = false; // Flag to indicate if a quiz is currently active
+        private static int currentQuestionIndex = 0; // Index of the current question in the quiz
+        private static int score = 0; // Variable to keep track of the user's score in the quiz
+        private static List<QuizQuestion> quizQuestions; // List to hold the quiz questions
+
+        private static List<string> activityLog = new List<string>();
+        private static LogEntry currentLogEntry = new LogEntry(); // Current log entry being created
+        private static List<LogEntry> logEntries = new List<LogEntry>(); // List to hold log entries
 
         private static Random rand = new Random();
         private static List<string> passwordTips = new List<string>
@@ -121,6 +129,12 @@ namespace ST10445734_Prog6221_POE_Part1
 
                 input = input.ToLower(); // Convert input to lowercase for easier matching
 
+                if (isQuizActive) 
+                {
+                    EvaluateQuizAnswer(input);
+                    return; // Exit if the quiz is active
+                }
+
                 // Check if the input contains specific keywords to determine the user's interest or concern
                 if (Regex.IsMatch(input, @"\b(interested in|want to know more about|keen on|tell me more)\b.*\b(password|phishing|safe browsing|privacy)\b"))
                 {
@@ -130,6 +144,7 @@ namespace ST10445734_Prog6221_POE_Part1
                     {
                         user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
                         currentTopic = matchedTopic; // Update the current topic
+                        LogActivity($"{user.Name} is interested about {currentTopic}");
 
                         ChatbotResponse($"Great, {user.Name}! I see you're interested in {user.FavoriteTopic}. Would you like to know more about it?");
                         GiveCurrentTipTopic(user.FavoriteTopic);
@@ -148,6 +163,7 @@ namespace ST10445734_Prog6221_POE_Part1
                         user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
                         currentTopic = matchedTopic; // Update the current topic
 
+                        LogActivity($"{user.Name} is concerned about {currentTopic}");
                         ChatbotResponse($"It's completely understandable to feel that way, {user.Name}. Cyber threats can be scary. Let's take a look at a helpful tip about {currentTopic}.");
                         GiveCurrentTipTopic(user.FavoriteTopic);
                     }
@@ -167,6 +183,7 @@ namespace ST10445734_Prog6221_POE_Part1
                         user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
                         currentTopic = matchedTopic; // Update the current topic
 
+                        LogActivity($"{user.Name} is curious about {currentTopic}");
                         ChatbotResponse($"That's great, {user.Name}! Learning about {currentTopic} is a smart move. Here's something useful:");
                         GiveCurrentTipTopic(currentTopic);
                     }
@@ -184,6 +201,7 @@ namespace ST10445734_Prog6221_POE_Part1
                         user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
                         currentTopic = matchedTopic; // Update the current topic
 
+                        LogActivity($"{user.Name} is frustrated about {currentTopic}");
                         ChatbotResponse($"I'm sorry you're feeling that way, {user.Name}. Let me try to help make {currentTopic} clearer with this tip:");
                         GiveCurrentTipTopic(currentTopic);
                     }
@@ -198,6 +216,7 @@ namespace ST10445734_Prog6221_POE_Part1
 
                     if (!string.IsNullOrEmpty(matchedTopic))
                     {
+                        LogActivity($"{user.Name} wants to know about {currentTopic}");
                         currentTopic = matchedTopic; // Update the current topic
                         SelectedRandomResponse(currentTopic);
                     }
@@ -209,14 +228,18 @@ namespace ST10445734_Prog6221_POE_Part1
 
                 else if (input.Contains("how are you"))
                 {
+                    LogActivity($"{user.Name} asked how the I'm doing");
+
                     ChatbotResponse("I'm doing well, thank you! Always ready to help answer your questions on Cybersecurity.");
                 }
                 else if (input.Contains("what is your purpose") || input.Contains("what's your purpose"))
                 {
+                    LogActivity($"{user.Name} asked about my purpose in life.");
                     ChatbotResponse("I am a cybersecutiy awareness bot. I am here to answer questions and give tips about cybersecurity.");
                 }
                 else if (input.Contains("what can i ask"))
                 {
+                    LogActivity($"{user.Name} asked me what can the ask from me");
                     ChatbotResponse("You can ask about password safety, phishing scams, browsing safety or anything related to cybersecurity.");
                 }
                 else if (Regex.IsMatch(input, @"\b(again|repeat|come again|please repeat|can you explain again|huh)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("again") || input.Contains("repeat") || input.Contains("come again")
@@ -225,6 +248,7 @@ namespace ST10445734_Prog6221_POE_Part1
 
                     if (!string.IsNullOrEmpty(currentTopic))
                     {
+                        LogActivity($"Repeated information on {matchedTopic}");
                         currentTopic = matchedTopic; // Update the current topic
                         RepeatResponse(currentTopic); // Repeat the last response for the current topic
                     }
@@ -239,6 +263,7 @@ namespace ST10445734_Prog6221_POE_Part1
 
                     if (!string.IsNullOrEmpty(currentTopic))
                     {
+                        LogActivity($"Gave more information on {matchedTopic}");
                         ChatbotResponse($"Sure {user.Name}, here's more info on {currentTopic}:");
                         ShowExpandedTip(currentTopic);
                     }
@@ -257,6 +282,7 @@ namespace ST10445734_Prog6221_POE_Part1
                         user.FavoriteTopic = matchedTopic; // Set the user's favorite topic based on the matched topic
                         currentTopic = matchedTopic; // Update the current topic
 
+                        LogActivity($"Told the user about their favourite topic {matchedTopic}");
                         ChatbotResponse($"As someone interested in {user.FavoriteTopic}");
                         GiveCurrentTipTopic(user.FavoriteTopic);
                     }
@@ -268,10 +294,12 @@ namespace ST10445734_Prog6221_POE_Part1
 
                 else if (input.Contains("hi") || input.Contains("hello") || input.Contains("hey"))
                 {
+                    LogActivity($"Greeted the user, {user.Name}");
                     ChatbotResponse($"Hello {user.Name}, how can I assist you today?");
                 }
-                else if (input.Contains("help") || input.Contains("commands"))
+                else if (input.Contains("help"))
                 {
+                    LogActivity($"User, {user.Name}, asked to eloborate on what I can help them with");
                     ChatbotResponse("You can ask me about password safety, phishing scams, safe browsing, or privacy tips. Just type your question or topic of interest.");
                 }
                 else if (input.Contains("commands") || input.Contains("menu") || input.Contains("menu again"))
@@ -300,6 +328,7 @@ namespace ST10445734_Prog6221_POE_Part1
                     }; // Create a new task object
 
                     taskService.AddTask(newTask); // Add the new task using the TaskService
+                    LogActivity($"Task added: '{newTask.Title}' (Reminder: {newTask.ReminderDate})");
                 }
                 else if (Regex.IsMatch(input, @"\b(remind me in|update the date|set a reminder)\b\s+(a\s+)?task", RegexOptions.IgnoreCase))
                 {
@@ -313,6 +342,7 @@ namespace ST10445734_Prog6221_POE_Part1
                             Task existingTask = taskService.GetTasks().FirstOrDefault(t => t.Title.Equals(taskTitle, StringComparison.OrdinalIgnoreCase));
                             if (existingTask != null)
                             {
+                                LogActivity($"Updated info on task called: '{existingTask.Title}'");
                                 existingTask.ReminderDate = reminderDate; // Update the reminder date for the existing task
                                 ChatbotResponse($"Reminder for '{taskTitle}' has been updated to {reminderDate.ToShortDateString()}.");
                             }
@@ -334,6 +364,7 @@ namespace ST10445734_Prog6221_POE_Part1
                 else if (Regex.IsMatch(input, @"\b(show|view|list)\b.*\btasks?\b", RegexOptions.IgnoreCase))
                 {
                     taskService.GetTasks(); // Get the list of tasks from the TaskService
+                    LogActivity($"Generated list of all the tasks");
                 }
                 else if (Regex.IsMatch(input, @"\b(delete|remove)\b.*\btask\b", RegexOptions.IgnoreCase))
                 {
@@ -346,6 +377,7 @@ namespace ST10445734_Prog6221_POE_Part1
                         if (task != null)
                         {
                             taskService.DeleteTask(task);
+                            LogActivity($"Task \"{titleToRemove}\" has been removed.");
                             ChatbotResponse($"Task \"{titleToRemove}\" has been removed.");
                         }
                         else
@@ -359,14 +391,34 @@ namespace ST10445734_Prog6221_POE_Part1
                     }
                 }
                 else if (Regex.IsMatch(input, @"\b(start|play|begin|launch)\b.*\b(quiz|game|cybersecurity quiz|cybersecurity game)\b", RegexOptions.IgnoreCase) ||
-                    Regex.IsMatch(input, @"\b(quiz|test|game)\b", RegexOptions.IgnoreCase)) 
+                    Regex.IsMatch(input, @"\b(quiz|test|game)\b", RegexOptions.IgnoreCase))
                 {
                     ChatbotResponse($"Great, {user.Name}! Let's start a cybersecurity quiz. I will ask you a series of questions, and you can answer them to test your knowledge.");
-                    isQuizActive = true; // Set the quiz active flag to true
 
-                    while (isQuizActive) 
+                    LogActivity($"{user.Name} started a quiz on cybersecurity awareness.");
+
+                    isQuizActive = true; // Set the quiz active flag to true
+                    currentQuestionIndex = 0; // Reset the current question index
+                    score = 0; // Reset the score
+                    quizQuestions = quizService.LoadQuestions1(); // Load the quiz questions from the QuizService
+
+                    AskNextQuestion();
+
+                }
+                else if (Regex.IsMatch(input, @"\b(show|view)\b.*\b(activity log|log|history|activity|actions)\b", RegexOptions.IgnoreCase) ||
+                    Regex.IsMatch(input, @"\b(what have you done|recent actions|previous tasks)\b", RegexOptions.IgnoreCase)) 
+                {
+                    if (logEntries.Count == 0) 
                     {
-                        PlayQuiz();
+                        ChatbotResponse("No activity log entries found yet. Start interacting with me to create a log of your activities.");
+                    }
+                    else 
+                    {
+                        ChatbotResponse("Here are your recent activities:");
+                        foreach (var entry in logEntries) 
+                        {
+                            ChatbotResponse($"{entry.Timestamp.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture)} - {entry.Message}");
+                        }
                     }
                 }
                 else
@@ -382,9 +434,63 @@ namespace ST10445734_Prog6221_POE_Part1
         }
 
         // method to play the quiz
-        private static void PlayQuiz()
+        private static void AskNextQuestion()
         {
-            
+            if (currentQuestionIndex < quizQuestions.Count)
+            {
+                var question = quizQuestions[currentQuestionIndex]; // Get the current question
+                string formattedQuestion = $"Q{currentQuestionIndex + 1}: {question.Question}\n";
+
+                for (int i = 0; i < question.Options.Count; i++)
+                {
+                    formattedQuestion += $"{(char)('A' + i)}. {question.Options[i]}\n";
+                }
+
+                ChatbotResponse(formattedQuestion);
+            }
+            else 
+            {
+                ChatbotResponse($"Quiz complete! You got {score} out of {quizQuestions.Count} correct.");
+                isQuizActive = false;
+            }
+        }
+
+        // method to evaluate the quiz answer
+        private static void EvaluateQuizAnswer(string input)
+        {
+            var question = quizQuestions[currentQuestionIndex]; // Get the current question
+            int selectedIndex = GetAnswerFromInput(input);
+
+            var answerOption = question.Options[selectedIndex]; // Get the answer options for the current question
+
+            if (selectedIndex == question.CorrectAnswerIndex)
+            {
+                score++; // Increment the score if the answer is correct
+                ChatbotResponse($"Correct! {question.Explanation}");
+            }
+            else
+            {
+                ChatbotResponse($"Incorrect. {question.Explanation}");
+            }
+
+            currentQuestionIndex++; // Move to the next question
+            AskNextQuestion();
+        }
+
+        // method to get the answer index from the input string
+        private static int GetAnswerFromInput(string input) 
+        {
+            input = input.ToLower().Trim(); // Normalize the input to lowercase and trim whitespace
+
+            if (input.StartsWith("a")) return 0; // If input starts with 'a', return index 0
+            if (input.StartsWith("b")) return 1; // If input starts with 'b', return index 1
+            if (input.StartsWith("c")) return 2; // If input starts with 'c', return index 2
+            if (input.StartsWith("d")) return 3; // If input starts with 'd', return index 3
+
+            if (input.Contains("true")) return 0; // If input contains 'true', return index 0
+            if (input.Contains("false")) return 1; // If input contains 'false', return index 1 
+
+            return -1; // Default return value if no valid answer is found
         }
 
         // method to show expanded tip
@@ -449,6 +555,7 @@ namespace ST10445734_Prog6221_POE_Part1
                 
         }
 
+        // method to set the print method for chatbot responses
         public static void SetPrintMethod(Action<string> printMethod)
         {
             // This method sets the print method for chatbot responses
@@ -545,6 +652,7 @@ namespace ST10445734_Prog6221_POE_Part1
             ChatbotResponse(response[lastIndex]); // Output the selected response to the console
         }
 
+        // method to get the list of responses based on the current topic
         private static List<string> GetResponseListByTopic(string topic) 
         {
             // This method returns the list of responses based on the current topic
@@ -586,6 +694,7 @@ namespace ST10445734_Prog6221_POE_Part1
             }
         }
 
+        // method to get the matched topic from the input string
         private static string GetMatchedTopic(string input) 
         {
             if (Regex.IsMatch(input,@"\bpassword(s)?\b")) return "password";
@@ -595,6 +704,7 @@ namespace ST10445734_Prog6221_POE_Part1
             return null; // Return null if no topic is matched
         }
 
+        // method to extract the task title from the input string
         private static string ExtractTaskTitle(string input) 
         {
             string cleanedInput = Regex.Replace(input, @"\b(add a task|add task|create a task to|create a task|set reminder|set a task|remind me to)\b", "", RegexOptions.IgnoreCase).Trim();
@@ -602,6 +712,7 @@ namespace ST10445734_Prog6221_POE_Part1
             return CultureInfo.CurrentCulture.TextInfo.ToTitleCase(cleanedInput); // Convert the cleaned input to title case code from chatgpt
         }
 
+        // method to parse natural language date input
         private static DateTime? ParseNaturalDate(string input) 
         {
             if (input.Contains("tomorrow")) 
@@ -631,6 +742,23 @@ namespace ST10445734_Prog6221_POE_Part1
             }
 
             return null;
+        }
+
+        // method to log activity
+        private static void LogActivity(string log) 
+        {
+            LogEntry newLog = new LogEntry 
+            {
+                Timestamp = DateTime.Now, // Set the current timestamp
+                Message = log // Set the log message
+            };
+
+            logEntries.Add(newLog); // Add the log entry to the list of log entries
+
+            if (logEntries.Count > 10) 
+            {
+                logEntries.RemoveAt(0); // Remove the oldest log entry if the list exceeds 10 entries
+            }
         }
     }
 }

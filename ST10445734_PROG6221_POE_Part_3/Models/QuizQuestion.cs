@@ -10,7 +10,7 @@ namespace ST10445734_PROG6221_POE_Part_3.Models
     {
         public string Question { get; set; }
         public List<string> Options { get; set; }
-        public string CorrectAnswer { get; set; }
+        public int CorrectAnswerIndex { get; set; }
         public string Explanation { get; set; }
     }
 }
