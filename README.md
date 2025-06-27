@@ -6,11 +6,11 @@ Welcome to the Prog6221 POE, a Cybersecurity chatbot. It is a .Net Framework GUI
 This chatbot is intended to be a fun and interactive way to learn about cybersecurity concepts and best practices.
 
 ## Project Info
-Author: Thabo Setsubi
-Student Number: ST10445734
-Module: PROG6221
-Group: 01 
-Project: POE Part 3
+- **Student Name:** Thabo Setsubi
+- **Student Number:** ST10445734
+- **Module:** PROG6221
+- **Group:** 01
+- **Project:** POE Part 3
 
 ##  Key Features
 
@@ -43,7 +43,6 @@ Project: POE Part 3
   - NLP interactions (e.g. favorite topics)
 - Viewable on command:  
   “Show activity log” or “What have you done for me?”
-- 
 
 ---
 
@@ -80,14 +79,14 @@ Project: POE Part 3
    ```bash
    git clone https://github.com/yourusername/CybersecurityChatbot.git
 2. **Open in Visual Studio:**
-  Target Framework: .NET Framework 4.8
-  Run the MainWindow.xaml
+  - Target Framework: .NET Framework 4.8
+  - Run the MainWindow.xaml
 
 4. **Run the App:**
-  Interact with the chatbot via the input box.
+  - Interact with the chatbot via the input box.
 
 
 
 
 ## Video Presentation Link
-https://youtu.be/2PtgerBzjRU
+- https://youtu.be/2PtgerBzjRU
