@@ -111,12 +111,29 @@ namespace ST10445734_Prog6221_POE_Part1
             }
         };
 
+        private static readonly Dictionary<string, List<string>> TopicSynonyms = new Dictionary<string, List<string>>()
+        {
+            { "phishing", new List<string> {
+                "email scams", "scam emails", "fraudulent emails", "spoofing", "malicious emails", "fake messages", "phishing attacks"
+            }},
+            { "password", new List<string> {
+                "password safety", "secure passwords", "strong password", "password strength", "password tips", "credentials", "password protection"
+            }},
+            { "safe browsing", new List<string> {
+                "secure browsing", "browsing safety", "internet safety", "online security", "web safety", "safe surfing", "secure internet use"
+            }},
+            { "privacy", new List<string> {
+                "data protection", "personal data", "online privacy", "information privacy", "keeping info private", "private data", "digital privacy"
+            }}
+        };
+
         // method to respond to user input
         public static void RespondToInput(string input, User user)
         {
             // This method processes user input and responds with appropriate tips or information based on the user's interests and queries.
             try
             {
+                string matchedTopic = GetMatchedTopic(input);
                 // Check if the input is null or empty, and if so, prompt the user to type something
                 if (string.IsNullOrWhiteSpace(input))
                 {
@@ -132,14 +149,20 @@ namespace ST10445734_Prog6221_POE_Part1
 
                 if (isQuizActive) 
                 {
+                    if (Regex.IsMatch(input, @"\b(exit|leave|finish)\b.*\b(quiz|game)\b")) 
+                    {
+                        isQuizActive = false; // Set the quiz active flag to false
+                        ChatbotResponse($"Exiting the quiz, {user.Name}. You can start it again anytime by typing 'start quiz'.");
+                        return; // Exit the quiz if the user wants to leave
+                    }
                     EvaluateQuizAnswer(input);
                     return; // Exit if the quiz is active
                 }
 
                 // Check if the input contains specific keywords to determine the user's interest or concern
-                if (Regex.IsMatch(input, @"\b(interested in|want to know more about|keen on|tell me more)\b.*\b(password|phishing|safe browsing|privacy)\b"))
+                if (Regex.IsMatch(input, @"\b(interested in|want to know more about|keen on|tell me more)\b"))
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(matchedTopic))
                     {
@@ -155,9 +178,9 @@ namespace ST10445734_Prog6221_POE_Part1
                         ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
                 }
-                else if (Regex.IsMatch(input, @"\b(worried|afraid|concerned|nervous|scared)\b.*\b(password|phishing|safe browsing|privacy)\b"))
+                else if (Regex.IsMatch(input, @"\b(worried|afraid|concerned|nervous|scared)\b"))
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(matchedTopic))
                     {
@@ -175,9 +198,9 @@ namespace ST10445734_Prog6221_POE_Part1
 
                     GiveCurrentTipTopic(currentTopic);
                 }
-                else if (Regex.IsMatch(input, @"\b(curious|want to learn)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("curious") || input.Contains("interested") || input.Contains("want to learn")
+                else if (Regex.IsMatch(input, @"\b(curious|want to learn)\b")) 
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(matchedTopic))
                     {
@@ -193,9 +216,9 @@ namespace ST10445734_Prog6221_POE_Part1
                         ChatbotResponse("Please specify a topic like password safety, phishing, safe browsing, or privacy.");
                     }
                 }
-                else if (Regex.IsMatch(input, @"\b(frustrated|annoyed|confused)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("frustrated") || input.Contains("annoyed") || input.Contains("confused")
+                else if (Regex.IsMatch(input, @"\b(frustrated|annoyed|confused)\b")) 
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(matchedTopic))
                     {
@@ -279,9 +302,9 @@ namespace ST10445734_Prog6221_POE_Part1
                     LogActivity($"{user.Name} asked me what can the ask from me");
                     ChatbotResponse("You can ask about password safety, phishing scams, browsing safety or anything related to cybersecurity.");
                 }
-                else if (Regex.IsMatch(input, @"\b(again|repeat|come again|please repeat|can you explain again|huh)\b.*\b(password|phishing|safe browsing|privacy)\b")) // input.Contains("again") || input.Contains("repeat") || input.Contains("come again")
+                else if (Regex.IsMatch(input, @"\b(again|repeat|come again|please repeat|can you explain again|huh)\b")) 
                 {
-                    string matchedTopic = GetMatchedTopic(input);
+                    matchedTopic = GetMatchedTopic(input);
 
                     if (!string.IsNullOrEmpty(currentTopic))
                     {
@@ -504,6 +527,20 @@ namespace ST10445734_Prog6221_POE_Part1
         {
             var question = quizQuestions[currentQuestionIndex]; // Get the current question
             int selectedIndex = GetAnswerFromInput(input);
+
+            bool isValidAnswer = false; // Flag to check if the answer is valid
+
+            if (question.Options.Count == 2 && (input == "true" || input == "false"))
+            {
+                isValidAnswer = true; // Valid answer for true/false questions
+            }
+            else if (int.TryParse(input, out int choiceNumber)) 
+            {
+                if (choiceNumber >= 1 && choiceNumber <= question.Options.Count)
+                {
+                    isValidAnswer = true; // Valid answer for numbered options
+                }
+            }
 
             var answerOption = question.Options[selectedIndex]; // Get the answer options for the current question
 
@@ -741,10 +778,21 @@ namespace ST10445734_Prog6221_POE_Part1
         // method to get the matched topic from the input string
         private static string GetMatchedTopic(string input) 
         {
-            if (Regex.IsMatch(input,@"\bpassword(s)?\b")) return "password";
-            if (Regex.IsMatch(input,@"\bphishing\b")) return "phishing";
-            if (Regex.IsMatch(input, @"\bsafe browsing|browsing safety\b")) return "safe browsing";
-            if (Regex.IsMatch(input, @"\bprivacy\b")) return "privacy";
+            input = input.ToLower(); // Normalize the input to lowercase
+            foreach (var topic in TopicSynonyms) // Iterate through the dictionary of topics and their synonyms
+            {
+                if (input.Contains(topic.Key))
+                {
+                    return topic.Key;
+                }
+                foreach (var keyword in topic.Value)
+                {
+                    if (input.Contains(keyword))
+                    {
+                        return topic.Key;
+                    }
+                }
+            }
             return null; // Return null if no topic is matched
         }
 

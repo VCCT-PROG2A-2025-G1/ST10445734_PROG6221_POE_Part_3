@@ -67,7 +67,7 @@ namespace ST10445734_PROG6221_POE_Part_3
             {
                 ChatOutput.Text += $"\nYou: {userMessage} \n";
                 ChatbotResponses.RespondToInput(userMessage, currentUser); // Call the chatbot response method with the user's message and name
-
+                ChatOutput.ScrollToEnd();
                 UserInput.Clear();
             }
         }
